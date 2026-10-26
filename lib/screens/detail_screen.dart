@@ -41,14 +41,20 @@ class _DetailScreenState extends State<DetailScreen> {
             const Center(
               child: Icon(Icons.shopping_bag, size: 90, color: Colors.blue),
             ),
+
             const SizedBox(height: 20),
+
             Text(
               widget.title,
               style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 12),
+
             Text(widget.description, style: const TextStyle(fontSize: 17)),
+
             const SizedBox(height: 12),
+
             Text(
               'Precio: ${widget.price}',
               style: const TextStyle(
@@ -57,22 +63,49 @@ class _DetailScreenState extends State<DetailScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 30),
+
+            const SizedBox(height: 20),
+
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Icon(Icons.verified_user, color: Colors.green, size: 32),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Producto disponible para consulta.',
+                        style: TextStyle(fontSize: 15),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             const Text(
               '¿Tienes alguna consulta?',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 10),
+
             TextField(
               controller: _controller,
               decoration: const InputDecoration(
                 labelText: 'Escribe tu consulta',
+                hintText: 'Ej.: ¿El producto tiene garantía?',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.message),
               ),
               maxLines: 3,
             ),
+
             const SizedBox(height: 16),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -93,11 +126,15 @@ class _DetailScreenState extends State<DetailScreen> {
                 label: const Text('Enviar consulta'),
               ),
             ),
+
             const SizedBox(height: 12),
+
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Volver al catálogo'),
               ),
