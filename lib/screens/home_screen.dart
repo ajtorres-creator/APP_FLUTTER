@@ -28,6 +28,26 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
+
+            const Text(
+              'Categorías destacadas',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: const [
+                Chip(avatar: Icon(Icons.smartphone), label: Text('Teléfonos')),
+                Chip(avatar: Icon(Icons.laptop), label: Text('Computadoras')),
+                Chip(avatar: Icon(Icons.headphones), label: Text('Accesorios')),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
             ProductCard(
               title: 'Smartphone Pro',
               description: 'Teléfono moderno con cámara de alta calidad.',
