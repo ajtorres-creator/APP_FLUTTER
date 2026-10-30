@@ -20,20 +20,23 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 18),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, size: 38, color: Colors.blue.shade700),
+              child: Icon(icon, size: 38, color: const Color(0xFF2563EB)),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -45,20 +48,27 @@ class ProductCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFF101827),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(description),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   Text(
                     price,
                     style: const TextStyle(
-                      fontSize: 17,
-                      color: Colors.green,
+                      fontSize: 18,
+                      color: Color(0xFF2563EB),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -74,7 +84,7 @@ class ProductCard extends StatelessWidget {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.visibility),
+                      icon: const Icon(Icons.visibility_outlined),
                       label: const Text('Ver detalles'),
                     ),
                   ),

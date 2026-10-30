@@ -82,7 +82,7 @@ class HomeScreen extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Chip(avatar: Icon(Icons.smartphone), label: Text('Teléfonos')),
+                Chip(avatar: Icon(Icons.phone), label: Text('Teléfonos')),
                 Chip(avatar: Icon(Icons.laptop), label: Text('Computadoras')),
                 Chip(avatar: Icon(Icons.headphones), label: Text('Accesorios')),
               ],
@@ -102,10 +102,10 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 12),
 
             ProductCard(
-              title: 'Smartphone Pro',
+              title: 'Phone',
               description: 'Teléfono moderno con cámara de alta calidad.',
               price: '\$399.99',
-              icon: Icons.smartphone,
+              icon: Icons.phone,
             ),
 
             ProductCard(
