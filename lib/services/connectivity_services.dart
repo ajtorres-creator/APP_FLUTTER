@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ConnectivityService {
@@ -12,6 +13,7 @@ class ConnectivityService {
   }
 
   bool hasConnection(List<ConnectivityResult> results) {
+    debugPrint('Tipos de conexión detectados: $results');
     return !results.contains(ConnectivityResult.none);
   }
 }

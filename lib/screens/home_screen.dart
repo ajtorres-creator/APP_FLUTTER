@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../services/connectivity_services.dart';
+import '../services/local_storage_service.dart';
 import '../widgets/product_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ConnectivityService _connectivityService = ConnectivityService();
+  final LocalStorageService _localStorageService = LocalStorageService();
 
   StreamSubscription<List<ConnectivityResult>>? _subscription;
 
@@ -25,28 +27,38 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    _checkInitialConnection();
+    _initializeConnection();
 
     _subscription = _connectivityService.connectivityStream.listen((results) {
-      if (!mounted) return;
-
-      setState(() {
-        _hasConnection = _connectivityService.hasConnection(results);
-        _loadingConnection = false;
-      });
+      _updateConnection(results);
     });
   }
 
-  Future<void> _checkInitialConnection() async {
+  Future<void> _initializeConnection() async {
     try {
+      final savedStatus = await _localStorageService.getConnectionStatus();
+
+      if (!mounted) return;
+
+      if (savedStatus != null) {
+        setState(() {
+          _hasConnection = savedStatus;
+          _loadingConnection = false;
+        });
+      }
+
       final results = await _connectivityService.checkConnection();
 
       if (!mounted) return;
 
+      final currentStatus = _connectivityService.hasConnection(results);
+
       setState(() {
-        _hasConnection = _connectivityService.hasConnection(results);
+        _hasConnection = currentStatus;
         _loadingConnection = false;
       });
+
+      await _localStorageService.saveConnectionStatus(currentStatus);
     } catch (e) {
       if (!mounted) return;
 
@@ -55,6 +67,19 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadingConnection = false;
       });
     }
+  }
+
+  Future<void> _updateConnection(List<ConnectivityResult> results) async {
+    final connected = _connectivityService.hasConnection(results);
+
+    if (!mounted) return;
+
+    setState(() {
+      _hasConnection = connected;
+      _loadingConnection = false;
+    });
+
+    await _localStorageService.saveConnectionStatus(connected);
   }
 
   @override
