@@ -1,9 +1,67 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+import '../services/connectivity_services.dart';
 import '../widgets/product_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final ConnectivityService _connectivityService = ConnectivityService();
+
+  StreamSubscription<List<ConnectivityResult>>? _subscription;
+
+  bool _hasConnection = true;
+  bool _loadingConnection = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _checkInitialConnection();
+
+    _subscription = _connectivityService.connectivityStream.listen((results) {
+      if (!mounted) return;
+
+      setState(() {
+        _hasConnection = _connectivityService.hasConnection(results);
+        _loadingConnection = false;
+      });
+    });
+  }
+
+  Future<void> _checkInitialConnection() async {
+    try {
+      final results = await _connectivityService.checkConnection();
+
+      if (!mounted) return;
+
+      setState(() {
+        _hasConnection = _connectivityService.hasConnection(results);
+        _loadingConnection = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _hasConnection = false;
+        _loadingConnection = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +83,33 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!_loadingConnection && !_hasConnection)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.wifi_off, color: Colors.red.shade700),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Sin conexión a Internet. Revisa tu red.',
+                        style: TextStyle(
+                          color: Colors.red.shade700,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
