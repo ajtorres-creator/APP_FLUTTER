@@ -1,11 +1,9 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:provider/provider.dart';
 
-import '../services/connectivity_services.dart';
-import '../services/local_storage_service.dart';
+import '../providers/connectivity_provider.dart';
 import '../services/image_services.dart';
 import '../services/notification_service.dart';
 import '../widgets/product_card.dart';
@@ -18,90 +16,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ConnectivityService _connectivityService = ConnectivityService();
-  final LocalStorageService _localStorageService = LocalStorageService();
   final ImageService _imageService = ImageService();
   final NotificationService _notificationService = NotificationService();
 
   File? _selectedImage;
-
-  StreamSubscription<List<ConnectivityResult>>? _subscription;
-
-  bool _hasConnection = true;
-  bool _loadingConnection = true;
   bool _sendingNotification = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _initializeConnection();
-
-    _subscription = _connectivityService.connectivityStream.listen(
-      (results) {
-        _updateConnection(results);
-      },
-      onError: (error) {
-        debugPrint('Error de conectividad: $error');
-      },
-    );
-  }
-
-  // Inicializar el estado de conexión
-  Future<void> _initializeConnection() async {
-    try {
-      final savedStatus = await _localStorageService.getConnectionStatus();
-
-      if (!mounted) return;
-
-      if (savedStatus != null) {
-        setState(() {
-          _hasConnection = savedStatus;
-          _loadingConnection = false;
-        });
-      }
-
-      final results = await _connectivityService.checkConnection();
-
-      if (!mounted) return;
-
-      final currentStatus = _connectivityService.hasConnection(results);
-
-      setState(() {
-        _hasConnection = currentStatus;
-        _loadingConnection = false;
-      });
-
-      await _localStorageService.saveConnectionStatus(currentStatus);
-    } catch (e) {
-      debugPrint('Error al inicializar conexión: $e');
-
-      if (!mounted) return;
-
-      setState(() {
-        _hasConnection = false;
-        _loadingConnection = false;
-      });
-    }
-  }
-
-  // Actualizar el estado de conexión
-  Future<void> _updateConnection(List<ConnectivityResult> results) async {
-    final connected = _connectivityService.hasConnection(results);
-
-    if (!mounted) return;
-
-    setState(() {
-      _hasConnection = connected;
-      _loadingConnection = false;
-    });
-
-    try {
-      await _localStorageService.saveConnectionStatus(connected);
-    } catch (e) {
-      debugPrint('Error al guardar estado de conexión: $e');
-    }
-  }
 
   // Mostrar mensajes al usuario
   void _showMessage(String message, {bool error = false}) {
@@ -205,13 +124,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Consultar el estado de conexión administrado por Provider
+    final connection = context.watch<ConnectivityProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -231,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Aviso de conexión
-            if (!_loadingConnection && !_hasConnection)
+            if (!connection.loading && !connection.hasConnection)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),

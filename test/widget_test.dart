@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cat_tech/main.dart';
 
 void main() {
-  testWidgets('La aplicación inicia correctamente', (
+  testWidgets('La aplicación NexTech inicia correctamente', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const CatTechApp());
+    await tester.pumpWidget(const NexTechApp());
 
-    expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.text('NexTech'), findsOneWidget);
+    expect(find.text('Bienvenido a NexTech'), findsOneWidget);
   });
 }
