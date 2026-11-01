@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../services/connectivity_services.dart';
 import '../services/local_storage_service.dart';
+import '../services/image_services.dart';
 import '../widgets/product_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,7 +18,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ConnectivityService _connectivityService = ConnectivityService();
+
   final LocalStorageService _localStorageService = LocalStorageService();
+
+  final ImageService _imageService = ImageService();
+
+  File? _selectedImage;
 
   StreamSubscription<List<ConnectivityResult>>? _subscription;
 
@@ -34,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Inicializar el estado de conexión
   Future<void> _initializeConnection() async {
     try {
       final savedStatus = await _localStorageService.getConnectionStatus();
@@ -69,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Actualizar el estado de conexión
   Future<void> _updateConnection(List<ConnectivityResult> results) async {
     final connected = _connectivityService.hasConnection(results);
 
@@ -80,6 +89,48 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     await _localStorageService.saveConnectionStatus(connected);
+  }
+
+  // Seleccionar imagen desde cámara o galería
+  Future<void> _selectImage(bool fromCamera) async {
+    try {
+      final image = fromCamera
+          ? await _imageService.takePhoto()
+          : await _imageService.selectFromGallery();
+
+      if (image == null || !mounted) return;
+
+      setState(() {
+        _selectedImage = image;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al seleccionar imagen: $e')),
+      );
+    }
+  }
+
+  // Recortar imagen seleccionada
+  Future<void> _cropSelectedImage() async {
+    if (_selectedImage == null) return;
+
+    try {
+      final croppedImage = await _imageService.cropImage(_selectedImage!);
+
+      if (croppedImage == null || !mounted) return;
+
+      setState(() {
+        _selectedImage = croppedImage;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al recortar imagen: $e')));
+    }
   }
 
   @override
@@ -103,11 +154,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Aviso de conexión
             if (!_loadingConnection && !_hasConnection)
               Container(
                 width: double.infinity,
@@ -135,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+            // Presentación NexTech
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -177,6 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 25),
 
+            // Categorías
             const Text(
               'Categorías destacadas',
               style: TextStyle(
@@ -200,6 +255,110 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 25),
 
+            // Sección de cámara y galería
+            const Text(
+              'Mi imagen',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF101827),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                children: [
+                  // Vista previa de imagen
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: _selectedImage != null
+                        ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                        : const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.image_outlined,
+                                size: 65,
+                                color: Color(0xFF2563EB),
+                              ),
+                              SizedBox(height: 8),
+                              Text('Sin imagen seleccionada'),
+                            ],
+                          ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // Botones de cámara y galería
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _selectImage(true),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Tomar fotografía'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.all(14),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _selectImage(false),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Seleccionar de galería'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF2563EB),
+                        padding: const EdgeInsets.all(14),
+                      ),
+                    ),
+                  ),
+
+                  // Botón para recortar
+                  if (_selectedImage != null) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _cropSelectedImage,
+                        icon: const Icon(Icons.crop),
+                        label: const Text('Recortar imagen'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF101827),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // Productos
             const Text(
               'Nuestros productos',
               style: TextStyle(
