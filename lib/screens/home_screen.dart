@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/connectivity_provider.dart';
-import '../services/image_services.dart';
+import '../providers/image_provider.dart';
 import '../services/notification_service.dart';
 import '../widgets/product_card.dart';
 
@@ -16,13 +14,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ImageService _imageService = ImageService();
   final NotificationService _notificationService = NotificationService();
 
-  File? _selectedImage;
   bool _sendingNotification = false;
 
-  // Mostrar mensajes al usuario
   void _showMessage(String message, {bool error = false}) {
     if (!mounted) return;
 
@@ -34,67 +29,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Seleccionar imagen desde cámara o galería
   Future<void> _selectImage(bool fromCamera) async {
-    try {
-      final image = fromCamera
-          ? await _imageService.takePhoto()
-          : await _imageService.selectFromGallery();
+    final imageProvider = context.read<ImageProviderApp>();
 
-      if (!mounted) return;
+    if (fromCamera) {
+      await imageProvider.takePhoto();
+    } else {
+      await imageProvider.selectFromGallery();
+    }
 
-      if (image == null) {
-        final error = _imageService.lastError;
+    if (!mounted) return;
 
-        _showMessage(
-          error ?? 'No se seleccionó ninguna imagen.',
-          error: error != null,
-        );
-        return;
-      }
-
-      setState(() {
-        _selectedImage = image;
-      });
-
+    if (imageProvider.selectedImage != null) {
       _showMessage('Imagen seleccionada correctamente.');
-    } catch (e) {
-      debugPrint('Error al seleccionar imagen: $e');
-      _showMessage('Ocurrió un error al seleccionar la imagen.', error: true);
+    } else {
+      _showMessage(
+        imageProvider.errorMessage ?? 'No se seleccionó ninguna imagen.',
+        error:
+            imageProvider.errorMessage != null &&
+            imageProvider.errorMessage != 'No se seleccionó ninguna imagen.',
+      );
     }
   }
 
-  // Recortar imagen seleccionada
   Future<void> _cropSelectedImage() async {
-    if (_selectedImage == null) return;
+    final imageProvider = context.read<ImageProviderApp>();
 
-    try {
-      final croppedImage = await _imageService.cropImage(_selectedImage!);
+    await imageProvider.cropImage();
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      if (croppedImage == null) {
-        final error = _imageService.lastError;
-
-        _showMessage(
-          error ?? 'No se realizó el recorte de la imagen.',
-          error: error != null,
-        );
-        return;
-      }
-
-      setState(() {
-        _selectedImage = croppedImage;
-      });
-
-      _showMessage('Imagen recortada correctamente.');
-    } catch (e) {
-      debugPrint('Error al recortar imagen: $e');
-      _showMessage('Ocurrió un error al procesar la imagen.', error: true);
+    if (imageProvider.selectedImage != null &&
+        imageProvider.errorMessage == null) {
+      _showMessage('Imagen procesada correctamente.');
+    } else if (imageProvider.errorMessage != null) {
+      _showMessage(imageProvider.errorMessage!, error: true);
     }
   }
 
-  // Enviar una notificación local de prueba
   Future<void> _sendNotification() async {
     if (_sendingNotification) return;
 
@@ -125,8 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Consultar el estado de conexión administrado por Provider
     final connection = context.watch<ConnectivityProvider>();
+    final images = context.watch<ImageProviderApp>();
 
     return Scaffold(
       appBar: AppBar(
@@ -146,7 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Aviso de conexión
             if (!connection.loading && !connection.hasConnection)
               Container(
                 width: double.infinity,
@@ -163,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Sin conexión a Internet. Revisa tu red.',
+                        'Sin conexión de red. Revisa tu conexión.',
                         style: TextStyle(
                           color: Colors.red.shade700,
                           fontWeight: FontWeight.bold,
@@ -174,7 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-            // Presentación NexTech
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -217,7 +187,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 25),
 
-            // Categorías
             const Text(
               'Categorías destacadas',
               style: TextStyle(
@@ -241,7 +210,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 25),
 
-            // Sección de cámara y galería
             const Text(
               'Mi imagen',
               style: TextStyle(
@@ -272,8 +240,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       border: Border.all(color: Colors.grey.shade300),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: _selectedImage != null
-                        ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                    child: images.selectedImage != null
+                        ? Image.file(images.selectedImage!, fit: BoxFit.cover)
                         : const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -293,7 +261,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _selectImage(true),
+                      onPressed: images.loading
+                          ? null
+                          : () => _selectImage(true),
                       icon: const Icon(Icons.camera_alt),
                       label: const Text('Tomar fotografía'),
                     ),
@@ -304,7 +274,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => _selectImage(false),
+                      onPressed: images.loading
+                          ? null
+                          : () => _selectImage(false),
                       icon: const Icon(Icons.photo_library),
                       label: const Text('Seleccionar de galería'),
                       style: OutlinedButton.styleFrom(
@@ -314,12 +286,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  if (_selectedImage != null) ...[
+                  if (images.selectedImage != null) ...[
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _cropSelectedImage,
+                        onPressed: images.loading ? null : _cropSelectedImage,
                         icon: const Icon(Icons.crop),
                         label: const Text('Recortar imagen'),
                         style: ElevatedButton.styleFrom(
@@ -328,13 +300,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ],
+
+                  if (images.loading) ...[
+                    const SizedBox(height: 12),
+                    const CircularProgressIndicator(),
+                  ],
                 ],
               ),
             ),
 
             const SizedBox(height: 25),
 
-            // Sección de notificaciones
             const Text(
               'Notificaciones NexTech',
               style: TextStyle(
@@ -410,7 +386,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 25),
 
-            // Productos
             const Text(
               'Nuestros productos',
               style: TextStyle(

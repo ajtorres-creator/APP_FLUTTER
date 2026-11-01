@@ -1,4 +1,4 @@
-package com.example.cat_tech
+package com.nextech.app
 
 import io.flutter.embedding.android.FlutterActivity
 

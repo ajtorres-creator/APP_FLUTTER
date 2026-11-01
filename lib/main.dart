@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
 import 'providers/connectivity_provider.dart';
+import 'providers/image_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,8 +27,13 @@ class NexTechApp extends StatelessWidget {
     const celeste = Color(0xFF22D3EE);
     const fondo = Color(0xFFF1F5F9);
 
-    return ChangeNotifierProvider(
-      create: (_) => ConnectivityProvider()..initialize(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ConnectivityProvider()..initialize(),
+        ),
+        ChangeNotifierProvider(create: (_) => ImageProviderApp()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'NexTech',

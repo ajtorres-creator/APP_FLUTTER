@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cat_tech/main.dart';
+import 'package:nextech/main.dart';
 
 void main() {
   testWidgets('La aplicación NexTech inicia correctamente', (

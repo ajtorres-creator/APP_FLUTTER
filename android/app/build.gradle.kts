@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cat_tech"
+    namespace = "com.nextech.app"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.cat_tech"
+        applicationId = "com.nextech.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
