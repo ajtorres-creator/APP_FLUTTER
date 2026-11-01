@@ -37,9 +37,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _initializeConnection();
 
-    _subscription = _connectivityService.connectivityStream.listen((results) {
-      _updateConnection(results);
-    });
+    _subscription = _connectivityService.connectivityStream.listen(
+      (results) {
+        _updateConnection(results);
+      },
+      onError: (error) {
+        debugPrint('Error de conectividad: $error');
+      },
+    );
   }
 
   // Inicializar el estado de conexión
@@ -69,6 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await _localStorageService.saveConnectionStatus(currentStatus);
     } catch (e) {
+      debugPrint('Error al inicializar conexión: $e');
+
       if (!mounted) return;
 
       setState(() {
@@ -89,7 +96,23 @@ class _HomeScreenState extends State<HomeScreen> {
       _loadingConnection = false;
     });
 
-    await _localStorageService.saveConnectionStatus(connected);
+    try {
+      await _localStorageService.saveConnectionStatus(connected);
+    } catch (e) {
+      debugPrint('Error al guardar estado de conexión: $e');
+    }
+  }
+
+  // Mostrar mensajes al usuario
+  void _showMessage(String message, {bool error = false}) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? Colors.red : null,
+      ),
+    );
   }
 
   // Seleccionar imagen desde cámara o galería
@@ -99,17 +122,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ? await _imageService.takePhoto()
           : await _imageService.selectFromGallery();
 
-      if (image == null || !mounted) return;
+      if (!mounted) return;
+
+      if (image == null) {
+        final error = _imageService.lastError;
+
+        _showMessage(
+          error ?? 'No se seleccionó ninguna imagen.',
+          error: error != null,
+        );
+        return;
+      }
 
       setState(() {
         _selectedImage = image;
       });
-    } catch (e) {
-      if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al seleccionar imagen: $e')),
-      );
+      _showMessage('Imagen seleccionada correctamente.');
+    } catch (e) {
+      debugPrint('Error al seleccionar imagen: $e');
+      _showMessage('Ocurrió un error al seleccionar la imagen.', error: true);
     }
   }
 
@@ -120,17 +152,26 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final croppedImage = await _imageService.cropImage(_selectedImage!);
 
-      if (croppedImage == null || !mounted) return;
+      if (!mounted) return;
+
+      if (croppedImage == null) {
+        final error = _imageService.lastError;
+
+        _showMessage(
+          error ?? 'No se realizó el recorte de la imagen.',
+          error: error != null,
+        );
+        return;
+      }
 
       setState(() {
         _selectedImage = croppedImage;
       });
-    } catch (e) {
-      if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al recortar imagen: $e')));
+      _showMessage('Imagen recortada correctamente.');
+    } catch (e) {
+      debugPrint('Error al recortar imagen: $e');
+      _showMessage('Ocurrió un error al procesar la imagen.', error: true);
     }
   }
 
@@ -147,15 +188,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Notificación enviada correctamente.')),
-      );
+      _showMessage('Notificación enviada correctamente.');
     } catch (e) {
+      debugPrint('Error al enviar notificación: $e');
+
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al enviar notificación: $e')),
-      );
+      _showMessage('Error al enviar la notificación.', error: true);
     } finally {
       if (mounted) {
         setState(() {
