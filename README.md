@@ -1,74 +1,51 @@
-\# Catálogo Tech
+﻿# NexTech
 
+**Tecnología que conecta contigo.**
 
+NexTech es una aplicación móvil desarrollada con Flutter y Dart, orientada a la presentación de productos tecnológicos. El proyecto incorpora una identidad visual renovada y servicios nativos del dispositivo para mejorar la experiencia del usuario.
 
-\## Descripción
+## Funcionalidades principales
 
-Catálogo Tech es una aplicación móvil desarrollada con Flutter y Dart para mostrar productos tecnológicos y consultar sus detalles.
+- Catálogo de productos tecnológicos.
+- Visualización de información y detalles de productos.
+- Navegación entre pantallas mediante Navigator.
+- Detección reactiva de cambios en la conectividad de red.
+- Banner informativo cuando no existe conexión de red.
+- Persistencia local de información mediante SharedPreferences.
+- Selección de imágenes desde la galería.
+- Captura de fotografías con la cámara.
+- Recorte de imágenes.
+- Notificaciones locales.
 
+## Tecnologías utilizadas
 
+- Flutter
+- Dart
+- Material Design
+- Provider
+- connectivity_plus
+- shared_preferences
+- image_picker
+- image_cropper
+- flutter_local_notifications
+- Git y GitHub
 
-\## Funcionalidades
+## Arquitectura del proyecto
 
-\- Visualización de productos tecnológicos.
-
-\- Categorías destacadas.
-
-\- Pantalla de detalle de cada producto.
-
-\- Navegación entre pantallas mediante Navigator.
-
-\- Envío del nombre, descripción y precio del producto seleccionado.
-
-\- Formulario para escribir consultas.
-
-
-
-\## Tecnologías utilizadas
-
-\- Flutter
-
-\- Dart
-
-\- Material Design
-
-\- Git y GitHub
-
-
-
-\## Estructura del proyecto
-
-\- `lib/main.dart`: punto de entrada de la aplicación.
-
-\- `lib/screens/home\_screen.dart`: pantalla principal.
-
-\- `lib/screens/detail\_screen.dart`: detalle del producto.
-
-\- `lib/widgets/product\_card.dart`: tarjeta reutilizable para cada producto.
-
-
-
-\## Ejecución
-
-1\. Instalar Flutter y configurar el entorno.
-
-2\. Clonar este repositorio.
-
-3\. Abrir una terminal en la carpeta del proyecto.
-
-4\. Ejecutar `flutter pub get`.
-
-5\. Ejecutar `flutter run`.
-
-
-
-\## Repositorio
-
-https://github.com/ajtorres-creator/APP\_FLUTTER
-
-
-
-\## Autor
-
-Anthony Torres
+```text
+lib/
+├── main.dart
+├── screens/
+│   ├── home_screen.dart
+│   └── detail_screen.dart
+├── widgets/
+│   └── product_card.dart
+├── services/
+│   ├── connectivity_services.dart
+│   ├── local_storage_service.dart
+│   ├── image_services.dart
+│   └── notification_service.dart
+└── providers/
+    ├── connectivity_provider.dart
+    └── image_provider.dart
 
