@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'screens/home_screen.dart';
+import 'services/notification_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final notificationService = NotificationService();
+
+  await notificationService.initialize();
+  await notificationService.requestPermission();
+
   runApp(const CatTechApp());
 }
 

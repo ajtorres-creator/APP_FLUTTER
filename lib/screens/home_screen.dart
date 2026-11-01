@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../services/connectivity_services.dart';
 import '../services/local_storage_service.dart';
 import '../services/image_services.dart';
+import '../services/notification_service.dart';
 import '../widgets/product_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,10 +19,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ConnectivityService _connectivityService = ConnectivityService();
-
   final LocalStorageService _localStorageService = LocalStorageService();
-
   final ImageService _imageService = ImageService();
+  final NotificationService _notificationService = NotificationService();
 
   File? _selectedImage;
 
@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _hasConnection = true;
   bool _loadingConnection = true;
+  bool _sendingNotification = false;
 
   @override
   void initState() {
@@ -133,6 +134,37 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Enviar una notificación local de prueba
+  Future<void> _sendNotification() async {
+    if (_sendingNotification) return;
+
+    setState(() {
+      _sendingNotification = true;
+    });
+
+    try {
+      await _notificationService.showNotification();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notificación enviada correctamente.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al enviar notificación: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _sendingNotification = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _subscription?.cancel();
@@ -154,7 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -277,7 +308,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 children: [
-                  // Vista previa de imagen
                   Container(
                     width: 180,
                     height: 180,
@@ -305,18 +335,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 18),
 
-                  // Botones de cámara y galería
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () => _selectImage(true),
                       icon: const Icon(Icons.camera_alt),
                       label: const Text('Tomar fotografía'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(14),
-                      ),
                     ),
                   ),
 
@@ -335,7 +359,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // Botón para recortar
                   if (_selectedImage != null) ...[
                     const SizedBox(height: 10),
                     SizedBox(
@@ -346,12 +369,86 @@ class _HomeScreenState extends State<HomeScreen> {
                         label: const Text('Recortar imagen'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF101827),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.all(14),
                         ),
                       ),
                     ),
                   ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // Sección de notificaciones
+            const Text(
+              'Notificaciones NexTech',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF101827),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.notifications_active,
+                        color: Color(0xFF2563EB),
+                        size: 30,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Mantente informado',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Recibe avisos y novedades directamente en tu dispositivo.',
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _sendingNotification
+                          ? null
+                          : _sendNotification,
+                      icon: _sendingNotification
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.notifications),
+                      label: Text(
+                        _sendingNotification
+                            ? 'Enviando...'
+                            : 'Probar notificación',
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
