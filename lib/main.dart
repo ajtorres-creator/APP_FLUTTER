@@ -1,3 +1,5 @@
+import 'providers/product_provider.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,6 +35,7 @@ class NexTechApp extends StatelessWidget {
           create: (_) => ConnectivityProvider()..initialize(),
         ),
         ChangeNotifierProvider(create: (_) => ImageProviderApp()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

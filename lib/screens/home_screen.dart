@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/connectivity_provider.dart';
 import '../providers/image_provider.dart';
 import '../services/notification_service.dart';
-import '../widgets/product_card.dart';
+import '../widgets/products_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -386,37 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 25),
 
-            const Text(
-              'Nuestros productos',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF101827),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            ProductCard(
-              title: 'Phone',
-              description: 'Teléfono moderno con cámara de alta calidad.',
-              price: '\$399.99',
-              icon: Icons.phone,
-            ),
-
-            ProductCard(
-              title: 'Laptop Ultra',
-              description: 'Equipo ideal para estudiar y trabajar.',
-              price: '\$799.99',
-              icon: Icons.laptop,
-            ),
-
-            ProductCard(
-              title: 'Auriculares Bluetooth',
-              description: 'Escucha tu música con comodidad.',
-              price: '\$49.99',
-              icon: Icons.headphones,
-            ),
+            const ProductsSection(),
           ],
         ),
       ),
