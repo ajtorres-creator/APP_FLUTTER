@@ -30,13 +30,25 @@ class ConnectivityProvider extends ChangeNotifier {
 
       final results = await _connectivityService.checkConnection();
 
-      _updateStatus(_connectivityService.hasConnection(results));
+      final hasNetwork = _connectivityService.hasConnection(results);
+
+      final hasInternet = hasNetwork
+          ? await _connectivityService.hasInternetAccess()
+          : false;
+
+      _updateStatus(hasInternet);
 
       await _localStorageService.saveConnectionStatus(_hasConnection);
 
       _subscription ??= _connectivityService.connectivityStream.listen(
-        (results) {
-          _updateStatus(_connectivityService.hasConnection(results));
+        (results) async {
+          final hasNetwork = _connectivityService.hasConnection(results);
+
+          final hasInternet = hasNetwork
+              ? await _connectivityService.hasInternetAccess()
+              : false;
+
+          _updateStatus(hasInternet);
         },
         onError: (error) {
           debugPrint('Error de conectividad: $error');
