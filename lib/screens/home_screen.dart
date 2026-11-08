@@ -204,15 +204,54 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 12),
 
-              const Wrap(
+              Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  Chip(avatar: Icon(Icons.phone), label: Text('Teléfonos')),
-                  Chip(avatar: Icon(Icons.laptop), label: Text('Computadoras')),
-                  Chip(
-                    avatar: Icon(Icons.headphones),
-                    label: Text('Accesorios'),
+                  ChoiceChip(
+                    avatar: const Icon(Icons.phone),
+                    label: const Text('Teléfonos'),
+                    selected:
+                        context.watch<ProductProvider>().selectedCategory ==
+                        'Teléfonos',
+                    onSelected: (_) {
+                      context.read<ProductProvider>().filterByCategory(
+                        'Teléfonos',
+                      );
+                    },
+                  ),
+                  ChoiceChip(
+                    avatar: const Icon(Icons.laptop),
+                    label: const Text('Computadoras'),
+                    selected:
+                        context.watch<ProductProvider>().selectedCategory ==
+                        'Computadoras',
+                    onSelected: (_) {
+                      context.read<ProductProvider>().filterByCategory(
+                        'Computadoras',
+                      );
+                    },
+                  ),
+                  ChoiceChip(
+                    avatar: const Icon(Icons.headphones),
+                    label: const Text('Accesorios'),
+                    selected:
+                        context.watch<ProductProvider>().selectedCategory ==
+                        'Accesorios',
+                    onSelected: (_) {
+                      context.read<ProductProvider>().filterByCategory(
+                        'Accesorios',
+                      );
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('Todos'),
+                    selected:
+                        context.watch<ProductProvider>().selectedCategory ==
+                        'Todos',
+                    onSelected: (_) {
+                      context.read<ProductProvider>().filterByCategory('Todos');
+                    },
                   ),
                 ],
               ),

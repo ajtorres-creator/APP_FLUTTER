@@ -63,7 +63,7 @@ class _ProductsSectionState extends State<ProductsSection> {
                   ),
                 ),
 
-              ...provider.products.map(_buildProductCard),
+              ...provider.filteredProducts.map(_buildProductCard),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: provider.isLoading ? null : provider.refreshProducts,

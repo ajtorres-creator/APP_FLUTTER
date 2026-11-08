@@ -11,6 +11,41 @@ class ProductProvider extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
+  String selectedCategory = 'Todos';
+
+  // Filtrar productos según la categoría seleccionada.
+  List<Product> get filteredProducts {
+    switch (selectedCategory) {
+      case 'Teléfonos':
+        return products
+            .where((product) => product.category == 'smartphones')
+            .toList();
+
+      case 'Computadoras':
+        return products
+            .where(
+              (product) =>
+                  product.category == 'laptops' ||
+                  product.category == 'tablets',
+            )
+            .toList();
+
+      case 'Accesorios':
+        return products
+            .where((product) => product.category == 'mobile-accessories')
+            .toList();
+
+      default:
+        return products;
+    }
+  }
+
+  // Cambiar la categoría seleccionada.
+  void filterByCategory(String category) {
+    selectedCategory = category;
+    notifyListeners();
+  }
+
   Future<void> fetchProducts() async {
     isLoading = true;
     errorMessage = null;
